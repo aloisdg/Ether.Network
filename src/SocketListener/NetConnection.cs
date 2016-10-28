@@ -20,6 +20,14 @@ namespace SocketListener
             this.socket = acceptedSocket;
         }
 
+        internal void Initialize(Socket acceptedSocket)
+        {
+            if (this.socket == null)
+            {
+                this.socket = acceptedSocket;
+            }
+        }
+
         public abstract void HandleMessage();
 
         public void Dispose()

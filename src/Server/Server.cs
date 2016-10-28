@@ -21,6 +21,10 @@ namespace Server
         protected override void Idle()
         {
             // TODO: do custom process on main thread.
+            while (true)
+            {
+                Console.ReadKey();
+            }
         }
     }
 }
