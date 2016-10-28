@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SocketListener
 {
-    public abstract class NetServer<T> : IDisposable, where T : NetConnection, new()
+    public abstract class NetServer<T> : IDisposable where T : NetConnection, new()
     {
         public NetServer()
         {
@@ -26,7 +26,6 @@ namespace SocketListener
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
 
         protected abstract void Initialize();
