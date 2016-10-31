@@ -19,7 +19,7 @@ namespace Server
         {
         }
 
-        public override void HandleMessage()
+        public override void HandleMessage(Packet packet)
         {
         }
     }

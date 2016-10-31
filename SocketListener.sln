@@ -16,6 +16,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocketListener", "src\Socke
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Server", "src\Server\Server.xproj", "{3CCC3E17-4C5D-41E8-BFE4-2D4885249AAC}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Client", "src\Client\Client.xproj", "{ACF79764-41ED-4F42-B5FF-BCF49BD570EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{3CCC3E17-4C5D-41E8-BFE4-2D4885249AAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CCC3E17-4C5D-41E8-BFE4-2D4885249AAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CCC3E17-4C5D-41E8-BFE4-2D4885249AAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACF79764-41ED-4F42-B5FF-BCF49BD570EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF79764-41ED-4F42-B5FF-BCF49BD570EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF79764-41ED-4F42-B5FF-BCF49BD570EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF79764-41ED-4F42-B5FF-BCF49BD570EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -37,5 +43,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0C443E2D-D14B-426A-B1FE-62F47ABF8DF8} = {E3A5C7DB-692B-4D82-BC37-6D81D39D6365}
 		{3CCC3E17-4C5D-41E8-BFE4-2D4885249AAC} = {E3A5C7DB-692B-4D82-BC37-6D81D39D6365}
+		{ACF79764-41ED-4F42-B5FF-BCF49BD570EE} = {E3A5C7DB-692B-4D82-BC37-6D81D39D6365}
 	EndGlobalSection
 EndGlobal

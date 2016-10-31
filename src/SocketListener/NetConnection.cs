@@ -8,7 +8,11 @@ namespace SocketListener
 {
     public abstract class NetConnection : IDisposable
     {
+        public int Id { get; protected set; }
+
         public Socket Socket { get; private set; }
+        
+        protected bool Working { get; set; }
 
         public NetConnection() 
             : this(null)
@@ -28,7 +32,7 @@ namespace SocketListener
             }
         }
 
-        public abstract void HandleMessage();
+        public abstract void HandleMessage(Packet packet);
 
         public void Dispose()
         {

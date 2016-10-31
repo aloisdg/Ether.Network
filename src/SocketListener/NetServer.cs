@@ -32,7 +32,7 @@ namespace SocketListener
 
         public void Start()
         {
-            if (this.IsRunning)
+            if (this.IsRunning == false)
             {
                 this.Initialize();
 
@@ -45,6 +45,8 @@ namespace SocketListener
 
                 this.handlerThread = new Thread(this.HandleClients);
                 this.handlerThread.Start();
+
+                this.IsRunning = true;
 
                 this.Idle();
             }
@@ -111,11 +113,21 @@ namespace SocketListener
                                 throw new Exception("Disconnected");
                             else
                             {
-                                // build packet with buffer
+                                using (Packet packet = new Packet(buffer))
+                                    client.HandleMessage(packet); // give packet to client.
                             }
                         }
                         catch (Exception e)
                         {
+                            if (client.Socket.Connected == false)
+                            {
+                                Console.WriteLine("Client disconnected");
+                                this.RemoveClient(client);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error: {0}", e.Message);
+                            }
                         }
                     }
                     
@@ -124,6 +136,16 @@ namespace SocketListener
             }
             catch (Exception e)
             {
+            }
+        }
+
+        public void RemoveClient(NetConnection client)
+        {
+            lock (syncClients)
+            {
+                NetConnection _clientToRemove = this.clients.Find((item) => { return (item is NetConnection && (item as NetConnection) == client); });
+
+                this.clients.Remove(_clientToRemove);
             }
         }
 
