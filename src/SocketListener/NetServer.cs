@@ -15,35 +15,59 @@ namespace SocketListener
         private Socket listenSocket;
         private List<NetConnection> clients;
         private Thread listenThread;
+        private Thread handlerThread;
+
+        public Boolean IsRunning { get; private set; }
 
         public NetServer()
         {
+            this.IsRunning = false;
+            this.clients = new List<NetConnection>();
+        }
+
+        ~NetServer()
+        {
+            this.Dispose(false);
         }
 
         public void Start()
         {
-            this.Initialize();
+            if (this.IsRunning)
+            {
+                this.Initialize();
 
-            this.listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            this.listenSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 4444));
-            this.listenSocket.Listen(100);
+                this.listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                this.listenSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 4444));
+                this.listenSocket.Listen(100);
 
-            this.listenThread = new Thread(new ThreadStart(this.ListenSocket));
-            this.listenThread.Start();
+                this.listenThread = new Thread(this.ListenSocket);
+                this.listenThread.Start();
 
-            this.Idle();
+                this.handlerThread = new Thread(this.HandleClients);
+                this.handlerThread.Start();
+
+                this.Idle();
+            }
+            else
+                throw new InvalidOperationException("NetServer is already running.");
         }
 
         public void Stop()
         {
+            if (this.IsRunning)
+            {
+                this.IsRunning = false;
+                this.Dispose();
+            }
         }
 
         private void ListenSocket()
         {
-            while (true)
+            while (this.IsRunning)
             {
                 if (this.listenSocket.Poll(100, SelectMode.SelectRead))
                 {
+                    Console.WriteLine("New client connected");
                     T client = new T();
 
                     client.Initialize(this.listenSocket.Accept());
@@ -51,22 +75,94 @@ namespace SocketListener
                     lock (syncClients)
                         this.clients.Add(client);
                 }
+
+                Thread.Sleep(100);
             }
         }
 
-        public void Dispose()
+        private void HandleClients()
         {
-            this.listenThread.Join();
-            this.listenSocket.Dispose();
+            Queue<NetConnection> clientsReady = new Queue<NetConnection>();
 
-            foreach (NetConnection connection in this.clients)
-                connection.Dispose();
+            try
+            {
+                while (this.IsRunning)
+                {
+                    lock (syncClients)
+                    {
+                        foreach (NetConnection client in this.clients)
+                            if (client.Socket.Poll(100, SelectMode.SelectRead) && client.Socket.Available > 0)
+                                clientsReady.Enqueue(client);
+                    }
 
-            this.clients.Clear();
+                    while (clientsReady.Any())
+                    {
+                        NetConnection client = clientsReady.Dequeue();
+
+                        int recievedDataSize = 0;
+                        byte[] buffer;
+
+                        try
+                        {
+                            buffer = new byte[client.Socket.Available];
+                            recievedDataSize = client.Socket.Receive(buffer);
+
+                            if (recievedDataSize < 0)
+                                throw new Exception("Disconnected");
+                            else
+                            {
+                                // build packet with buffer
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                        }
+                    }
+                    
+                    Thread.Sleep(50);
+                }
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         protected abstract void Initialize();
 
         protected abstract void Idle();
+
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    this.listenThread.Join();
+                    this.handlerThread.Join();
+
+                    this.listenThread = null;
+                    this.handlerThread = null;
+
+                    this.listenSocket.Dispose();
+                    
+                    foreach (NetConnection connection in this.clients)
+                        connection.Dispose();
+
+                    this.clients.Clear();
+                }
+
+                disposedValue = true;
+            }
+        }
+        
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

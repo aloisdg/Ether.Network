@@ -8,7 +8,7 @@ namespace SocketListener
 {
     public abstract class NetConnection : IDisposable
     {
-        private Socket socket;
+        public Socket Socket { get; private set; }
 
         public NetConnection() 
             : this(null)
@@ -17,14 +17,14 @@ namespace SocketListener
 
         public NetConnection(Socket acceptedSocket)
         {
-            this.socket = acceptedSocket;
+            this.Socket = acceptedSocket;
         }
 
         internal void Initialize(Socket acceptedSocket)
         {
-            if (this.socket == null)
+            if (this.Socket == null)
             {
-                this.socket = acceptedSocket;
+                this.Socket = acceptedSocket;
             }
         }
 
