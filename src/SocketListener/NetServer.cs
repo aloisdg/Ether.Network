@@ -113,8 +113,13 @@ namespace SocketListener
                                 throw new Exception("Disconnected");
                             else
                             {
-                                using (Packet packet = new Packet(buffer))
-                                    client.HandleMessage(packet); // give packet to client.
+                                Packet[] recievedPackets = Packet.Split(buffer);
+
+                                foreach (Packet packet in recievedPackets)
+                                {
+                                    client.HandleMessage(packet);
+                                    packet.Dispose();
+                                }
                             }
                         }
                         catch (Exception e)
@@ -136,6 +141,8 @@ namespace SocketListener
             }
             catch (Exception e)
             {
+                Console.WriteLine("Unexpected error: {0}. StackTrace:{1}{2}", 
+                    e.Message, Environment.NewLine, e.StackTrace);
             }
         }
 

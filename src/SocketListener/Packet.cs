@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -136,6 +137,39 @@ namespace SocketListener
                 this.memoryStream.Dispose();
                 this.memoryStream = null;
             }
+        }
+
+        public static Packet[] Split(byte[] buffer)
+        {
+            ICollection<Packet> packets = new List<Packet>();
+            
+            using (MemoryStream memoryStream = new MemoryStream(buffer))
+            {
+                using (BinaryReader readerStream = new BinaryReader(memoryStream))
+                {
+                    try
+                    {
+                        if (memoryStream.Length > 2) // Check if the packet is correct.
+                        {
+                            ushort numberOfPackets = readerStream.ReadUInt16();
+
+                            for (ushort i = 0; i < numberOfPackets; ++i)
+                            {
+                                int packetSize = readerStream.ReadInt32();
+                                byte[] packetBuffer = readerStream.ReadBytes(packetSize);
+
+                                packets.Add(new Packet(packetBuffer));
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("An error occured during the packet spliting. {0}", e.Message);
+                    }
+                }
+            }
+
+            return packets.ToArray();
         }
     }
 }
