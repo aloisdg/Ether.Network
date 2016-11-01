@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using SocketListener;
 
 namespace Client
 {
@@ -9,6 +6,10 @@ namespace Client
     {
         public static void Main(string[] args)
         {
+            NetClient client = new NetClient();
+
+            client.Connect("127.0.0.1", 4444);
+            client.Run(); // blocking
         }
     }
 }

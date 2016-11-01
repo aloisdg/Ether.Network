@@ -21,7 +21,9 @@ namespace SocketListener
 
         public NetConnection(Socket acceptedSocket)
         {
+            this.Id = Helper.GenerateUniqueId();
             this.Socket = acceptedSocket;
+            this.Working = false;
         }
 
         internal void Initialize(Socket acceptedSocket)
@@ -34,8 +36,29 @@ namespace SocketListener
 
         public abstract void HandleMessage(Packet packet);
 
+        public void Send(Packet packet)
+        {
+            this.Socket.Send(packet.Buffer);
+        }
+
+        public void SendTo(ICollection<NetConnection> clients, Packet packet)
+        {
+            foreach (NetConnection client in clients)
+                client.Send(packet);
+        }
+
+        public void SendToAll(Packet packet)
+        {
+            // TODO
+        }
+
         public void Dispose()
         {
+            if (this.Socket != null)
+            {
+                this.Socket.Dispose();
+                this.Socket = null;
+            }
         }
     }
 }

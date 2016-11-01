@@ -21,6 +21,7 @@ namespace Server
 
         public override void HandleMessage(Packet packet)
         {
+            Console.WriteLine("Incoming message");
         }
     }
 }
