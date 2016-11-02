@@ -51,7 +51,7 @@ namespace SocketListener
 
         public void SendTo(ICollection<NetConnection> clients, Packet packet)
         {
-            foreach (NetConnection client in clients)
+            foreach (var client in clients)
                 client.Send(packet);
         }
 
