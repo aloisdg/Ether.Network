@@ -5,7 +5,7 @@ namespace SocketListener
 {
     public static class Helper
     {
-        private static string Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        private const string Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         private static int id = 0;
 
         /// <summary>

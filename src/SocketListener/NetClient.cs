@@ -41,27 +41,17 @@ namespace SocketListener
 
                     if (recievedDataSize < 0)
                         throw new Exception("Disconnected");
-                    else
-                    {
-                        var recievedPackets = Packet.Split(buffer);
+                    var recievedPackets = Packet.Split(buffer);
 
-                        foreach (var packet in recievedPackets)
-                        {
-                            this.HandleMessage(packet);
-                            packet.Dispose();
-                        }
+                    foreach (var packet in recievedPackets)
+                    {
+                        this.HandleMessage(packet);
+                        packet.Dispose();
                     }
                 }
                 catch (Exception e)
                 {
-                    if (this.Socket.Connected == false)
-                    {
-                        Console.WriteLine("Client disconnected");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error: {0}", e.Message);
-                    }
+                    Console.WriteLine(!this.Socket.Connected ? "Client disconnected" : $"Error: {e.Message}");
                 }
             }
         }

@@ -17,7 +17,7 @@ namespace SocketListener
         private MemoryStream memoryStream;
         private BinaryReader memoryReader;
         private BinaryWriter memoryWriter;
-        private PacketState state;
+        private readonly PacketState state;
 
         private readonly Dictionary<Type, Func<BinaryReader, object>> readMethods = new Dictionary<Type, Func<BinaryReader, object>>()
         {
@@ -50,7 +50,7 @@ namespace SocketListener
                 (writer, value) =>
                 {
                     writer.Write((ushort)value.ToString().Length);
-                    if (value.ToString().Length > 0)
+                    if (value.ToString().Any())
                         writer.Write(Encoding.ASCII.GetBytes(value.ToString()));
                 }
             }
@@ -148,28 +148,25 @@ namespace SocketListener
             ICollection<Packet> packets = new List<Packet>();
             
             using (var memoryStream = new MemoryStream(buffer))
+            using (var readerStream = new BinaryReader(memoryStream))
             {
-                using (var readerStream = new BinaryReader(memoryStream))
+                try
                 {
-                    try
+                    while (readerStream.BaseStream.Position < readerStream.BaseStream.Length)
                     {
-                        while (readerStream.BaseStream.Position < readerStream.BaseStream.Length)
-                        {
-                            var packetSize = readerStream.ReadInt32();
+                        var packetSize = readerStream.ReadInt32();
 
-                            if (packetSize == 0)
-                                break;
-                            
-                            packets.Add(new Packet(readerStream.ReadBytes(packetSize)));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("An error occured during the packet spliting. {0}", e.Message);
+                        if (packetSize == 0)
+                            break;
+                        
+                        packets.Add(new Packet(readerStream.ReadBytes(packetSize)));
                     }
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"An error occured during the packet spliting. {e.Message}");
+                }
             }
-
             return packets.ToArray();
         }
     }
