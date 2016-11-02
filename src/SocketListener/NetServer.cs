@@ -13,11 +13,11 @@ namespace SocketListener
         private static object syncClients = new object();
 
         private Socket listenSocket;
-        private List<NetConnection> clients;
+        private readonly List<NetConnection> clients;
         private Thread listenThread;
         private Thread handlerThread;
 
-        public Boolean IsRunning { get; private set; }
+        public bool IsRunning { get; private set; }
 
         public NetServer()
         {
@@ -56,11 +56,9 @@ namespace SocketListener
 
         public void Stop()
         {
-            if (this.IsRunning)
-            {
-                this.IsRunning = false;
-                this.Dispose();
-            }
+            if (!this.IsRunning) return;
+            this.IsRunning = false;
+            this.Dispose();
         }
 
         private void ListenSocket()
@@ -103,13 +101,10 @@ namespace SocketListener
                     {
                         var client = clientsReady.Dequeue();
 
-                        var recievedDataSize = 0;
-                        byte[] buffer;
-
                         try
                         {
-                            buffer = new Byte[client.Socket.Available];
-                            recievedDataSize = client.Socket.Receive(buffer);
+                            var buffer = new byte[client.Socket.Available];
+                            var recievedDataSize = client.Socket.Receive(buffer);
 
                             if (recievedDataSize <= 0)
                                 throw new Exception("Disconnected");
@@ -126,15 +121,13 @@ namespace SocketListener
                         }
                         catch (Exception e)
                         {
-                            if (client.Socket.Connected == false)
+                            if (!client.Socket.Connected)
                             {
                                 Console.WriteLine("Client disconnected");
                                 this.RemoveClient(client);
                             }
                             else
-                            {
-                                Console.WriteLine("Error: {0}\n{1}", e.Message, e.StackTrace);
-                            }
+                                Console.WriteLine($"Error: {e.Message}{Environment.NewLine}{e.StackTrace}");
                         }
                     }
                     
@@ -143,8 +136,7 @@ namespace SocketListener
             }
             catch (Exception e)
             {
-                Console.WriteLine("Unexpected error: {0}. StackTrace:{1}{2}", 
-                    e.Message, Environment.NewLine, e.StackTrace);
+                Console.WriteLine($"Unexpected error: {e.Message}. StackTrace:{Environment.NewLine}{e.StackTrace}"); 
             }
         }
 
@@ -152,7 +144,7 @@ namespace SocketListener
         {
             lock (syncClients)
             {
-                var _clientToRemove = this.clients.Find(item => { return (item is NetConnection && (item as NetConnection) == client); });
+                var _clientToRemove = this.clients.Find(item => item != null && item == client);
 
                 this.clients.Remove(_clientToRemove);
             }
@@ -163,30 +155,28 @@ namespace SocketListener
         protected abstract void Idle();
 
         #region IDisposable Support
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (disposedValue) return;
+            if (disposing)
             {
-                if (disposing)
-                {
-                    this.listenThread.Join();
-                    this.handlerThread.Join();
+                this.listenThread.Join();
+                this.handlerThread.Join();
 
-                    this.listenThread = null;
-                    this.handlerThread = null;
+                this.listenThread = null;
+                this.handlerThread = null;
 
-                    this.listenSocket.Dispose();
+                this.listenSocket.Dispose();
                     
-                    foreach (var connection in this.clients)
-                        connection.Dispose();
+                foreach (var connection in this.clients)
+                    connection.Dispose();
 
-                    this.clients.Clear();
-                }
-
-                disposedValue = true;
+                this.clients.Clear();
             }
+
+            disposedValue = true;
         }
         
         public void Dispose()

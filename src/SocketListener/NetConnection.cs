@@ -28,11 +28,9 @@ namespace SocketListener
 
         internal void Initialize(Socket acceptedSocket)
         {
-            if (this.Socket == null)
-            {
-                this.Socket = acceptedSocket;
-                this.Greetings();
-            }
+            if (this.Socket != null) return;
+            this.Socket = acceptedSocket;
+            this.Greetings();
         }
 
         public abstract void Greetings();
@@ -62,11 +60,9 @@ namespace SocketListener
 
         public void Dispose()
         {
-            if (this.Socket != null)
-            {
-                this.Socket.Dispose();
-                this.Socket = null;
-            }
+            if (this.Socket == null) return;
+            this.Socket.Dispose();
+            this.Socket = null;
         }
     }
 }
