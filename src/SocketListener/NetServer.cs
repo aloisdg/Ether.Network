@@ -70,7 +70,7 @@ namespace SocketListener
                 if (this.listenSocket.Poll(100, SelectMode.SelectRead))
                 {
                     Console.WriteLine("New client connected");
-                    T client = new T();
+                    var client = new T();
 
                     client.Initialize(this.listenSocket.Accept());
 
@@ -84,7 +84,7 @@ namespace SocketListener
 
         private void HandleClients()
         {
-            Queue<NetConnection> clientsReady = new Queue<NetConnection>();
+            var clientsReady = new Queue<NetConnection>();
 
             try
             {
@@ -92,7 +92,7 @@ namespace SocketListener
                 {
                     lock (syncClients)
                     {
-                        foreach (NetConnection client in this.clients)
+                        foreach (var client in this.clients)
                         {
                             if (client.Socket.Poll(100, SelectMode.SelectRead))
                                 clientsReady.Enqueue(client);
@@ -101,9 +101,9 @@ namespace SocketListener
 
                     while (clientsReady.Any())
                     {
-                        NetConnection client = clientsReady.Dequeue();
+                        var client = clientsReady.Dequeue();
 
-                        int recievedDataSize = 0;
+                        var recievedDataSize = 0;
                         byte[] buffer;
 
                         try
@@ -115,9 +115,9 @@ namespace SocketListener
                                 throw new Exception("Disconnected");
                             else
                             {
-                                Packet[] recievedPackets = Packet.Split(buffer);
+                                var recievedPackets = Packet.Split(buffer);
 
-                                foreach (Packet packet in recievedPackets)
+                                foreach (var packet in recievedPackets)
                                 {
                                     client.HandleMessage(packet);
                                     packet.Dispose();
@@ -152,7 +152,7 @@ namespace SocketListener
         {
             lock (syncClients)
             {
-                NetConnection _clientToRemove = this.clients.Find((item) => { return (item is NetConnection && (item as NetConnection) == client); });
+                var _clientToRemove = this.clients.Find(item => { return (item is NetConnection && (item as NetConnection) == client); });
 
                 this.clients.Remove(_clientToRemove);
             }
@@ -179,7 +179,7 @@ namespace SocketListener
 
                     this.listenSocket.Dispose();
                     
-                    foreach (NetConnection connection in this.clients)
+                    foreach (var connection in this.clients)
                         connection.Dispose();
 
                     this.clients.Clear();

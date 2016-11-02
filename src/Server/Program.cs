@@ -8,7 +8,7 @@ namespace Server
         {
             Console.Title = "Server";
 
-            using (Server server = new Server())
+            using (var server = new Server())
                 server.Start();
         }
     }

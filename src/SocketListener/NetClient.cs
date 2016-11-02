@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace SocketListener
 {
@@ -19,58 +16,51 @@ namespace SocketListener
 
         public void Connect(string ip, int port)
         {
-            if (this.Socket.Connected == false)
-            {
-                this.Socket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
-                this.isRunning = true;
-            }
+            if (this.Socket.Connected)
+                return;
+            this.Socket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
+            this.isRunning = true;
         }
 
         public void Disconnect()
         {
             if (this.Socket.Connected)
-            {
                 this.Socket.Dispose();
-            }
         }
 
         public void Run()
         {
             while (this.isRunning)
             {
-                if (this.Socket.Poll(100, SelectMode.SelectRead))
+                if (!this.Socket.Poll(100, SelectMode.SelectRead)) continue;
+
+                try
                 {
-                    int recievedDataSize = 0;
-                    byte[] buffer;
+                    var buffer = new byte[this.Socket.Available];
+                    var recievedDataSize = this.Socket.Receive(buffer);
 
-                    try
+                    if (recievedDataSize < 0)
+                        throw new Exception("Disconnected");
+                    else
                     {
-                        buffer = new byte[this.Socket.Available];
-                        recievedDataSize = this.Socket.Receive(buffer);
+                        var recievedPackets = Packet.Split(buffer);
 
-                        if (recievedDataSize < 0)
-                            throw new Exception("Disconnected");
-                        else
+                        foreach (var packet in recievedPackets)
                         {
-                            Packet[] recievedPackets = Packet.Split(buffer);
-
-                            foreach (Packet packet in recievedPackets)
-                            {
-                                this.HandleMessage(packet);
-                                packet.Dispose();
-                            }
+                            this.HandleMessage(packet);
+                            packet.Dispose();
                         }
                     }
-                    catch (Exception e)
+                }
+                catch (Exception e)
+                {
+                    if (this.Socket.Connected == false)
                     {
-                        if (this.Socket.Connected == false)
-                        {
-                            Console.WriteLine("Client disconnected");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Error: {0}", e.Message);
-                        }
+                        Console.WriteLine("Client disconnected");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: {0}", e.Message);
                     }
                 }
             }
@@ -91,20 +81,20 @@ namespace SocketListener
             //int packetSize = packet.Read<int>();
             //Console.WriteLine("==> Packet size: {0}", packetSize);
 
-            string packetHeader = packet.Read<string>();
+            var packetHeader = packet.Read<string>();
             Console.WriteLine("==> packet header: {0}", packetHeader);
 
-            string packetContent = packet.Read<string>();
+            var packetContent = packet.Read<string>();
 
             Console.WriteLine("==> Packet content: {0}", packetContent);
 
             //// SEND PACKET ////
 
-            string randomString = Helper.GenerateRandomString();
+            var randomString = Helper.GenerateRandomString();
 
-            Packet newPacket = new Packet();
+            var newPacket = new Packet();
 
-            newPacket.Write<string>("hello world!");
+            newPacket.Write("hello world!");
             newPacket.Write(randomString);
 
             this.Send(newPacket);

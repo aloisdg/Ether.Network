@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SocketListener
 {
     internal enum PacketState
     {
         Read = 0,
-        Write,
+        Write
     }
 
     public class Packet : IDisposable
@@ -23,17 +21,17 @@ namespace SocketListener
 
         private readonly Dictionary<Type, Func<BinaryReader, object>> readMethods = new Dictionary<Type, Func<BinaryReader, object>>()
         {
-            { typeof(char), (reader) => { return reader.ReadChar(); } },
-            { typeof(byte), (reader) => { return reader.ReadByte(); } },
-            { typeof(bool), (reader) => { return reader.ReadBoolean(); } },
-            { typeof(ushort), (reader) => { return reader.ReadUInt16(); } },
-            { typeof(short), (reader) => { return reader.ReadInt16(); } },
-            { typeof(uint), (reader) => { return reader.ReadUInt32(); } },
-            { typeof(int), (reader) => { return reader.ReadInt32(); } },
-            { typeof(ulong), (reader) => { return reader.ReadUInt64(); } },
-            { typeof(long), (reader) => { return reader.ReadInt64(); } },
-            { typeof(byte[]), (reader) => { return reader.ReadBytes(count: reader.ReadUInt16()); } },
-            { typeof(string), (reader) => new string(reader.ReadChars(count: reader.ReadUInt16())) },
+            { typeof(char), reader => reader.ReadChar()},
+            { typeof(byte), reader => reader.ReadByte()},
+            { typeof(bool), reader => reader.ReadBoolean()},
+            { typeof(ushort), reader => reader.ReadUInt16()},
+            { typeof(short), reader => reader.ReadInt16()},
+            { typeof(uint), reader => reader.ReadUInt32()},
+            { typeof(int), reader => reader.ReadInt32()},
+            { typeof(ulong), reader => reader.ReadUInt64()},
+            { typeof(long), reader => reader.ReadInt64()},
+            { typeof(byte[]), reader => reader.ReadBytes(count: reader.ReadUInt16())},
+            { typeof(string), reader => new string(reader.ReadChars(count: reader.ReadUInt16())) },
         };
 
         private readonly Dictionary<Type, Action<BinaryWriter, object>> writeMethods = new Dictionary<Type, Action<BinaryWriter, object>>()
@@ -61,13 +59,13 @@ namespace SocketListener
         /// <summary>
         /// Gets the Packet buffer.
         /// </summary>
-        public Byte[] Buffer
+        public byte[] Buffer
         {
             get
             {
                 if (this.state == PacketState.Write)
                 {
-                    int size = Convert.ToInt32(this.memoryStream.Length);
+                    var size = Convert.ToInt32(this.memoryStream.Length);
 
                     this.memoryWriter.Seek(0, SeekOrigin.Begin);
                     this.Write(size);
@@ -75,7 +73,7 @@ namespace SocketListener
                     this.memoryStream.Flush();
                 }
 
-                ArraySegment<byte> buffer = new ArraySegment<byte>();
+                ArraySegment<byte> buffer;
 
                 this.memoryStream.TryGetBuffer(out buffer);
 
@@ -105,7 +103,7 @@ namespace SocketListener
             if (this.state != PacketState.Write)
                 throw new InvalidOperationException("Packet is in read-only mode.");
 
-            Type type = typeof(T);
+            var type = typeof(T);
 
             if (this.writeMethods.ContainsKey(type))
                 this.writeMethods[type](this.memoryWriter, value);
@@ -116,7 +114,7 @@ namespace SocketListener
             if (this.state != PacketState.Read)
                 throw new InvalidOperationException("Packet is in write-only mode.");
 
-            Type type = typeof(T);
+            var type = typeof(T);
 
             if (this.readMethods.ContainsKey(type))
                 return (T)this.readMethods[type](this.memoryReader);
@@ -149,15 +147,15 @@ namespace SocketListener
         {
             ICollection<Packet> packets = new List<Packet>();
             
-            using (MemoryStream memoryStream = new MemoryStream(buffer))
+            using (var memoryStream = new MemoryStream(buffer))
             {
-                using (BinaryReader readerStream = new BinaryReader(memoryStream))
+                using (var readerStream = new BinaryReader(memoryStream))
                 {
                     try
                     {
                         while (readerStream.BaseStream.Position < readerStream.BaseStream.Length)
                         {
-                            int packetSize = readerStream.ReadInt32();
+                            var packetSize = readerStream.ReadInt32();
 
                             if (packetSize == 0)
                                 break;
