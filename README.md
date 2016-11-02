@@ -1,8 +1,8 @@
-# SocketListener [![Build Status](https://travis-ci.org/Eastrall/SocketListener.svg?branch=master)](https://travis-ci.org/Eastrall/SocketListener)
+# Ether.Network [![Build Status](https://travis-ci.org/Eastrall/Ether.Network.svg?branch=master)](https://travis-ci.org/Eastrall/Ether.Network)
 
 
 
-SocketListener is a basic library to make quickly a simple server using sockets.
+Ether.Network is a basic library to make quickly a simple server or client using sockets.
 
 This library is coded in C# using .NET Core framework to target Windows and Linux operating systems.
 
