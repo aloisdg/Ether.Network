@@ -31,14 +31,22 @@ namespace SocketListener
             if (this.Socket == null)
             {
                 this.Socket = acceptedSocket;
+                this.Greetings();
             }
         }
+
+        public abstract void Greetings();
 
         public abstract void HandleMessage(Packet packet);
 
         public void Send(Packet packet)
         {
             this.Socket.Send(packet.Buffer);
+        }
+
+        public void SendTo(NetConnection client, Packet packet)
+        {
+            client.Send(packet);
         }
 
         public void SendTo(ICollection<NetConnection> clients, Packet packet)

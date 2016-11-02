@@ -93,8 +93,10 @@ namespace SocketListener
                     lock (syncClients)
                     {
                         foreach (NetConnection client in this.clients)
-                            if (client.Socket.Poll(100, SelectMode.SelectRead) && client.Socket.Available > 0)
+                        {
+                            if (client.Socket.Poll(100, SelectMode.SelectRead))
                                 clientsReady.Enqueue(client);
+                        }
                     }
 
                     while (clientsReady.Any())
@@ -106,10 +108,10 @@ namespace SocketListener
 
                         try
                         {
-                            buffer = new byte[client.Socket.Available];
+                            buffer = new Byte[client.Socket.Available];
                             recievedDataSize = client.Socket.Receive(buffer);
 
-                            if (recievedDataSize < 0)
+                            if (recievedDataSize <= 0)
                                 throw new Exception("Disconnected");
                             else
                             {
@@ -131,7 +133,7 @@ namespace SocketListener
                             }
                             else
                             {
-                                Console.WriteLine("Error: {0}", e.Message);
+                                Console.WriteLine("Error: {0}\n{1}", e.Message, e.StackTrace);
                             }
                         }
                     }

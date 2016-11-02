@@ -7,17 +7,27 @@ namespace SocketListener
     {
         private static string Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         private static int id = 0;
+
+        /// <summary>
+        /// Generates an unique Id.
+        /// </summary>
+        /// <returns></returns>
         public static int GenerateUniqueId()
         {
             return ++id;
         }
 
-        public static string GenerateRandomString()
+        /// <summary>
+        /// Generates a random string.
+        /// </summary>
+        /// <param name="count">Length of the string.</param>
+        /// <returns>Generated string</returns>
+        public static string GenerateRandomString(int count = 8)
         {
             var random = new Random();
 
             return new string(
-                            Enumerable.Repeat(Characters, 42)
+                            Enumerable.Repeat(Characters, count)
                                       .Select(s => s[random.Next(s.Length)])
                                       .ToArray());
         }

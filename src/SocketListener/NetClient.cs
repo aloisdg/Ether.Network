@@ -76,13 +76,24 @@ namespace SocketListener
             }
         }
 
+        public override void Greetings()
+        {
+            // not used
+            throw new NotImplementedException();
+        }
+
         public override void HandleMessage(Packet packet)
         {
             Console.WriteLine("Incoming message");
 
             //// RECIEVE PACKET ////
 
-            int packetHeader = packet.Read<int>();
+            //int packetSize = packet.Read<int>();
+            //Console.WriteLine("==> Packet size: {0}", packetSize);
+
+            string packetHeader = packet.Read<string>();
+            Console.WriteLine("==> packet header: {0}", packetHeader);
+
             string packetContent = packet.Read<string>();
 
             Console.WriteLine("==> Packet content: {0}", packetContent);
@@ -93,10 +104,10 @@ namespace SocketListener
 
             Packet newPacket = new Packet();
 
-            packet.Write<int>(42);
-            packet.Write(randomString);
+            newPacket.Write<string>("hello world!");
+            newPacket.Write(randomString);
 
-            this.Send(packet);
+            this.Send(newPacket);
         }
     }
 }

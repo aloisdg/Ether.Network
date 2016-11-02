@@ -59,22 +59,27 @@ namespace SocketListener
         };
 
         /// <summary>
-        /// Gets the Packet buffer
+        /// Gets the Packet buffer.
         /// </summary>
         public Byte[] Buffer
         {
             get
             {
-                int size = Convert.ToInt32(this.memoryStream.Length);
-
                 if (this.state == PacketState.Write)
                 {
+                    int size = Convert.ToInt32(this.memoryStream.Length);
+
                     this.memoryWriter.Seek(0, SeekOrigin.Begin);
                     this.Write(size);
                     this.memoryWriter.Seek(size, SeekOrigin.Begin);
+                    this.memoryStream.Flush();
                 }
 
-                return this.memoryStream.ToArray();
+                ArraySegment<byte> buffer = new ArraySegment<byte>();
+
+                this.memoryStream.TryGetBuffer(out buffer);
+
+                return buffer.ToArray();
             }
         }
 
@@ -84,13 +89,14 @@ namespace SocketListener
 
             this.memoryStream = new MemoryStream();
             this.memoryWriter = new BinaryWriter(this.memoryStream);
+            this.Write(0); // packet size
         }
 
         public Packet(byte[] buffer)
         {
             this.state = PacketState.Read;
 
-            this.memoryStream = new MemoryStream(buffer);
+            this.memoryStream = new MemoryStream(buffer, 0, buffer.Length);
             this.memoryReader = new BinaryReader(this.memoryStream);
         }
 
@@ -149,17 +155,14 @@ namespace SocketListener
                 {
                     try
                     {
-                        if (memoryStream.Length > 2) // Check if the packet is correct.
+                        while (readerStream.BaseStream.Position < readerStream.BaseStream.Length)
                         {
-                            ushort numberOfPackets = readerStream.ReadUInt16();
+                            int packetSize = readerStream.ReadInt32();
 
-                            for (ushort i = 0; i < numberOfPackets; ++i)
-                            {
-                                int packetSize = readerStream.ReadInt32();
-                                byte[] packetBuffer = readerStream.ReadBytes(packetSize);
-
-                                packets.Add(new Packet(packetBuffer));
-                            }
+                            if (packetSize == 0)
+                                break;
+                            
+                            packets.Add(new Packet(readerStream.ReadBytes(packetSize)));
                         }
                     }
                     catch (Exception e)
