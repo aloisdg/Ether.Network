@@ -1,4 +1,6 @@
-﻿using SocketListener;
+﻿using Ether.Network;
+using Ether.Network.Helpers;
+using Ether.Network.Packets;
 using System;
 using System.Net.Sockets;
 
@@ -18,7 +20,7 @@ namespace Server
 
         public override void Greetings()
         {
-            Packet packet = new Packet();
+            var packet = new NetPacket();
 
             packet.Write("Hello World!");
             packet.Write("Hello!");
@@ -26,7 +28,7 @@ namespace Server
             this.Send(packet);
         }
 
-        public override void HandleMessage(Packet packet)
+        public override void HandleMessage(NetPacket packet)
         {
             Console.WriteLine("Incoming message");
 
@@ -40,7 +42,7 @@ namespace Server
 
             string randomString = Helper.GenerateRandomString();
 
-            Packet newPacket = new Packet();
+            var newPacket = new NetPacket();
 
             newPacket.Write("Hello world!");
             newPacket.Write(randomString);
